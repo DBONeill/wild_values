@@ -196,13 +196,12 @@ elif st.session_state.current_section == 'test':
             if reverse_code:
                 response = 4 - response
             st.session_state.responses[category][idx] = response
-    st.button('View Results', on_click=go_to_section, args=('results',))
+    st.button('Your Wild Values Type', on_click=go_to_section, args=('type',))
 
-################
-# RESULTS PAGE #
-################
-elif st.session_state.current_section == 'results':
-    st.title("Results")
+#################
+# RESULTS PAGES #
+#################
+elif st.session_state.current_section == 'type':
     st.header("Your Wild Values personality type is:")
     responses = st.session_state.responses
     raw_scores = {category: sum(responses[category]) for category in responses}
@@ -226,8 +225,22 @@ elif st.session_state.current_section == 'results':
     highest_diff_description = sub_scale_descriptions[highest_diff_category]
     st.markdown(f"<div style='text-align: center; font-size: 16px;'>{highest_diff_description}</div>", unsafe_allow_html=True)
 
-    #st.markdown('<div style="text-align: center;">Your total score for each category:</div>', unsafe_allow_html=True)
-    #st.table(sub_scale_df.style.set_table_attributes("class='centered'"))
+    st.button('Your Wild Values Scores', on_click=go_to_section, args=('scores',))
+
+elif st.session_state.current_section == 'scores':
+    st.header("Your Wild Values Scores")
+    responses = st.session_state.responses
+    raw_scores = {category: sum(responses[category]) for category in responses}
+    normalized_scores = {}
+    
+    # TABLE AND SCORE CALCULATION
+    for category, raw_score in raw_scores.items():
+        max_raw_score = len(questions[category]) * 4
+        min_raw_score = 0
+        normalized_score = ((raw_score - min_raw_score) / (max_raw_score - min_raw_score)) * 100
+        normalized_scores[category] = int(normalized_score)
+    
+    sub_scale_df = pd.DataFrame(list(normalized_scores.items()), columns=["Category", "Score"])
     df = pd.DataFrame([normalized_scores])
 
     # CREATE RADAR PLOT AND OTHER RESULTS (IF NORMALIZED SCORES DEFINED)
@@ -296,7 +309,24 @@ elif st.session_state.current_section == 'results':
         )
         
         st.plotly_chart(fig)
+        st.button('Results in Detail & Other Wild Values', on_click=go_to_section, args=('details',))
+
+elif st.session_state.current_section == 'details':
+    st.header("Results in Detail & Other Wild Values")
+    responses = st.session_state.responses
+    raw_scores = {category: sum(responses[category]) for category in responses}
+    normalized_scores = {}
     
+    # TABLE AND SCORE CALCULATION
+    for category, raw_score in raw_scores.items():
+        max_raw_score = len(questions[category]) * 4
+        min_raw_score = 0
+        normalized_score = ((raw_score - min_raw_score) / (max_raw_score - min_raw_score)) * 100
+        normalized_scores[category] = int(normalized_score)
+    
+    sub_scale_df = pd.DataFrame(list(normalized_scores.items()), columns=["Category", "Score"])
+    df = pd.DataFrame([normalized_scores])
+
     # CREATE PANEL OF HISTOGRAMS
     # Initialize a figure with subplots (2 columns, 3 rows)
     fig2 = make_subplots(rows=3, cols=2, subplot_titles=d.columns)
